@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Lift or Leave It</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--teal:#2CB98A;--amber:#E09020;--card:rgba(14,16,14,0.95);--border:rgba(255,255,255,0.08);--font-title:'Bebas Neue',sans-serif;--font-ui:'Rajdhani',sans-serif;--font-body:'Barlow',sans-serif}
+    html,body{min-height:100%;background:#080808;color:#fff;font-family:var(--font-body)}
+    .bg{position:fixed;inset:0;background:url('assets/warehouse-bg.jpg') center/cover no-repeat;filter:brightness(0.10) saturate(0.4);z-index:0;pointer-events:none}
+    .page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 1.2rem 4rem}
+    .top-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap}
+    .nav-brand{font-family:var(--font-title);font-size:1.4rem;letter-spacing:0.18em;color:var(--teal);text-decoration:none}
+    .nav-actions{display:flex;gap:0.6rem}
+    .nav-btn{font-family:var(--font-ui);font-size:0.76rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.4rem 1rem;border-radius:6px;cursor:pointer;text-decoration:none;border:none;transition:background 0.15s}
+    .nav-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.6)}
+    .nav-btn-ghost:hover{background:rgba(255,255,255,0.07);color:#fff}
+    .nav-btn-danger{background:rgba(204,51,51,0.12);border:1px solid rgba(204,51,51,0.35);color:#F07070}
+    .nav-btn-danger:hover{background:rgba(204,51,51,0.22)}
+    .page-title{font-family:var(--font-title);font-size:2.8rem;letter-spacing:0.2em}
+    .page-subtitle{font-size:0.85rem;color:rgba(255,255,255,0.35);margin-top:0.3rem;margin-bottom:2rem}
+    .error-banner{background:rgba(204,51,51,0.12);border:1px solid rgba(204,51,51,0.30);border-radius:8px;padding:0.8rem 1.2rem;color:#F07070;font-size:0.84rem;margin-bottom:1.5rem;display:none}
+    .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:auto;margin-bottom:2rem}
+    table{width:100%;border-collapse:collapse;min-width:600px}
+    thead th{background:rgba(44,185,138,0.06);padding:0.7rem 1rem;text-align:left;font-family:var(--font-ui);font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.40);border-bottom:1px solid var(--border)}
+    tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.12s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:rgba(44,185,138,0.05)}
+    tbody tr.selected{background:rgba(44,185,138,0.08)}
+    td{padding:0.75rem 1rem;font-size:0.86rem;color:rgba(255,255,255,0.75)}
+    td.username{font-weight:600;color:#fff}
+    .del-btn{font-family:var(--font-ui);font-size:0.70rem;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:0.28rem 0.7rem;border-radius:5px;border:1px solid rgba(204,51,51,0.35);background:rgba(204,51,51,0.10);color:#F07070;cursor:pointer;transition:background 0.15s}
+    .del-btn:hover{background:rgba(204,51,51,0.25)}
+    .view-btn{font-family:var(--font-ui);font-size:0.70rem;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:0.28rem 0.7rem;border-radius:5px;border:1px solid rgba(44,185,138,0.35);background:rgba(44,185,138,0.10);color:#2CB98A;cursor:pointer;transition:background 0.15s;margin-right:0.3rem}
+    .view-btn:hover{background:rgba(44,185,138,0.25)}
+    .action-btns{display:flex;gap:0.25rem;align-items:center;white-space:nowrap}
+    .badge{font-family:var(--font-ui);font-size:0.65rem;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;padding:0.18rem 0.55rem;border-radius:999px}
+    .badge-pass{background:rgba(44,185,138,0.18);color:var(--teal)}
+    .badge-fail{background:rgba(204,51,51,0.15);color:#F07070}
+    .badge-best{background:rgba(44,185,138,0.18);color:var(--teal)}
+    .badge-good{background:rgba(224,144,32,0.18);color:var(--amber)}
+    .badge-wrong{background:rgba(204,51,51,0.15);color:#F07070}
+    .badge-skipped{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.40)}
+    #detail-panel{background:var(--card);border:1px solid rgba(44,185,138,0.20);border-radius:10px;padding:1.6rem;display:none}
+    #detail-panel.visible{display:block}
+    .detail-title{font-family:var(--font-title);font-size:1.8rem;letter-spacing:0.14em;margin-bottom:1rem}
+    .detail-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.8rem;margin-bottom:1.5rem}
+    .stat-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center}
+    .stat-value{font-family:var(--font-title);font-size:1.8rem;color:var(--teal)}
+    .stat-label{font-family:var(--font-ui);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:0.15rem}
+    .section-label{font-family:var(--font-ui);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:0.8rem}
+    .session-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;margin-bottom:0.7rem;overflow:hidden}
+    .session-header{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:0.85rem 1rem;cursor:pointer}
+    .session-score{font-family:var(--font-title);font-size:1.4rem;color:#fff}
+    .session-date{font-size:0.80rem;color:rgba(255,255,255,0.38)}
+    .session-meta{font-size:0.76rem;color:rgba(255,255,255,0.30);margin-left:auto}
+    .session-chevron{font-size:0.75rem;color:rgba(255,255,255,0.25);transition:transform 0.2s}
+    .session-card.expanded .session-chevron{transform:rotate(180deg)}
+    .choices-body{display:none;border-top:1px solid rgba(255,255,255,0.05);padding:0 1rem 0.8rem}
+    .session-card.expanded .choices-body{display:block}
+    .choice-row{padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+    .choice-row:last-child{border-bottom:none}
+    .choice-top{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.15rem}
+    .choice-name{font-size:0.84rem;color:rgba(255,255,255,0.80);font-weight:500}
+    .choice-pts{font-family:var(--font-ui);font-size:0.76rem;color:rgba(255,255,255,0.40);margin-left:auto}
+    .choice-pos{font-size:0.74rem;color:rgba(255,255,255,0.30)}
+    .choice-feedback{font-size:0.74rem;color:rgba(255,255,255,0.35);font-style:italic}
+    .empty-state{text-align:center;padding:2.5rem;color:rgba(255,255,255,0.25);font-size:0.88rem}
+    .loading{text-align:center;padding:2rem;color:rgba(255,255,255,0.30);font-size:0.84rem}
+    #confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.70);z-index:500;align-items:center;justify-content:center}
+    #confirm-overlay.visible{display:flex}
+    .confirm-card{background:rgba(14,16,14,0.98);border:1px solid rgba(204,51,51,0.35);border-radius:12px;padding:2rem 2.5rem;text-align:center;max-width:380px;width:90%}
+    .confirm-title{font-family:var(--font-title);font-size:1.8rem;letter-spacing:0.14em;margin-bottom:0.5rem}
+    .confirm-msg{font-size:0.88rem;color:rgba(255,255,255,0.55);margin-bottom:1.6rem;line-height:1.5}
+    .confirm-btns{display:flex;gap:0.8rem}
+    .confirm-btn{flex:1;padding:0.75rem;border-radius:6px;font-family:var(--font-ui);font-size:0.88rem;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;cursor:pointer;border:none}
+    .confirm-cancel{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6)}
+    .confirm-delete{background:rgba(204,51,51,0.80);color:#fff}
+    .confirm-delete:hover{background:rgba(204,51,51,1)}
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="page">
+  <nav class="top-nav">
+    <a href="/index.html" class="nav-brand">LIFT OR LEAVE IT</a>
+    <div class="nav-actions">
+      <a href="/index.html" class="nav-btn nav-btn-ghost">← Home</a>
+      <button onclick="AUTH.logout()" class="nav-btn nav-btn-danger">Log Out</button>
+    </div>
+  </nav>
+  <h1 class="page-title">ADMIN PANEL</h1>
+  <p class="page-subtitle">Player management — view sessions, scores and history</p>
+  <div id="error-banner" class="error-banner"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Username</th><th>Email</th><th>Warehouse Role</th><th>Joined</th><th>Sessions</th><th>Avg Score</th><th>Last Played</th><th></th></tr></thead>
+      <tbody id="players-tbody"><tr><td colspan="7" class="loading">Loading players...</td></tr></tbody>
+    </table>
+  </div>
+  <div id="detail-panel"></div>
+</div>
+<div id="confirm-overlay">
+  <div class="confirm-card">
+    <div class="confirm-title">⚠ DELETE PLAYER</div>
+    <p class="confirm-msg" id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="confirm-btn confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="confirm-btn confirm-delete" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+<script src="js/auth.js"></script>
+<script>
+  (async function(){await AUTH.requireAdmin()})();
+  var _pendingDeleteId=null; var _selectedRow=null;
+  function fmt(iso){if(!iso)return '—';return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
+  function esc(str){var d=document.createElement('div');d.textContent=str==null?'':String(str);return d.innerHTML;}
+  function oc(o){return{best:'badge-best',good:'badge-good',wrong:'badge-wrong',skipped:'badge-skipped'}[o]||'badge-skipped'}
+  function showError(msg){var b=document.getElementById('error-banner');b.textContent=msg;b.style.display='block'}
+
+  async function loadPlayers(){
+    try {
+      var res=await AUTH.authFetch('/api/admin/players'); var data=await res.json();
+      if(!res.ok){showError(data.error||'Failed to load players.');return}
+      var tbody=document.getElementById('players-tbody');
+      if(!data.length){tbody.innerHTML='<tr><td colspan="8" class="empty-state">No players registered yet.</td></tr>';return}
+      tbody.innerHTML=data.map(function(p){
+        return '<tr id="row-'+p.id+'" onclick="loadPlayer('+p.id+',this)">'+
+          '<td class="username">'+esc(p.username)+'</td>'+
+          '<td>'+esc(p.email)+'</td>'+
+          '<td>'+(p.job_role?esc(p.job_role):'—')+'</td>'+
+          '<td>'+fmt(p.created_at)+'</td>'+
+          '<td>'+p.total_sessions+'</td><td>'+p.avg_score+'</td><td>'+fmt(p.last_played)+'</td>'+
+          '<td><div class="action-btns">'+
+            '<button class="view-btn" onclick="event.stopPropagation();loadPlayer('+p.id+',document.getElementById(\'row-'+p.id+'\'))">View</button>'+
+            '<button class="del-btn" onclick="event.stopPropagation();confirmDelete('+p.id+',\''+p.username+'\')">Delete</button>'+
+          '</div></td>'+
+        '</tr>'
+      }).join('');
+    }catch(e){showError('Could not reach the server.')}
+  }
+
+  async function loadPlayer(id,row){
+    if(_selectedRow)_selectedRow.classList.remove('selected');
+    row.classList.add('selected'); _selectedRow=row;
+    var panel=document.getElementById('detail-panel');
+    panel.classList.add('visible'); panel.innerHTML='<div class="loading">Loading player data...</div>';
+    panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+    try{
+      var res=await AUTH.authFetch('/api/admin/players/'+id); var p=await res.json();
+      if(!res.ok){panel.innerHTML='<div class="empty-state">'+esc(p.error||'Failed to load.')+'</div>';return}
+      var sessionsHTML=(p.sessions||[]).map(function(s,i){
+        var choicesHTML=(s.choices||[]).map(function(c){
+          return '<div class="choice-row">'+
+            '<div class="choice-top"><span class="choice-name">'+esc(c.package_name)+'</span>'+
+            '<span class="badge '+oc(c.outcome)+'">'+esc(c.outcome)+'</span>'+
+            '<span class="choice-pts">'+(c.points>0?'+':'')+c.points+' pts</span></div>'+
+            '<div class="choice-pos">'+esc(c.position_label)+' — '+esc(c.technique_chosen)+'</div>'+
+            '<div class="choice-feedback">'+esc(c.feedback_text)+'</div></div>';
+        }).join('');
+        var sid='asc-'+id+'-'+i;
+        return '<div class="session-card" id="'+sid+'">'+
+          '<div class="session-header" onclick="document.getElementById(\''+sid+'\').classList.toggle(\'expanded\')">'+
+          '<div><div class="session-date">'+fmt(s.completed_at)+'</div>'+
+          '<div class="session-score">'+s.total_score+'<span style="font-size:0.9rem;color:rgba(255,255,255,0.30)"> / 100</span></div></div>'+
+          '<span class="badge '+(s.passed?'badge-pass':'badge-fail')+'">'+(s.passed?'PASS':'FAIL')+'</span>'+
+          (s.ended_early?'<span class="badge" style="background:rgba(224,144,32,0.15);color:#E09020">EARLY</span>':'')+
+          '<div class="session-meta">Tech +'+s.technique_score+' · Time +'+s.time_bonus+' · Bonus +'+s.injury_bonus+'</div>'+
+          '<span class="session-chevron">▼</span></div>'+
+          '<div class="choices-body">'+(choicesHTML||'<div style="padding:0.6rem;color:rgba(255,255,255,0.25);font-size:0.80rem">No choices.</div>')+'</div></div>';
+      }).join('');
+      panel.innerHTML=
+        '<div class="detail-title">'+esc(p.username)+'</div>'+
+        '<div class="detail-stats">'+
+          '<div class="stat-card"><div class="stat-value">'+p.total_sessions+'</div><div class="stat-label">Sessions</div></div>'+
+          '<div class="stat-card"><div class="stat-value">'+p.avg_score+'</div><div class="stat-label">Avg Score</div></div>'+
+          '<div class="stat-card"><div class="stat-value">'+p.best_score+'</div><div class="stat-label">Best Score</div></div>'+
+          '<div class="stat-card"><div class="stat-value">'+p.pass_rate+'%</div><div class="stat-label">Pass Rate</div></div>'+
+        '</div>'+
+        '<p class="section-label">Session History</p>'+
+        (sessionsHTML||'<div class="empty-state">No sessions recorded.</div>');
+    }catch(e){panel.innerHTML='<div class="empty-state">Could not load player data.</div>'}
+  }
+
+  function confirmDelete(id,name){
+    _pendingDeleteId=id;
+    document.getElementById('confirm-msg').textContent='Delete "'+name+'" and all their session data? This cannot be undone.';
+    document.getElementById('confirm-overlay').classList.add('visible');
+  }
+  function closeConfirm(){_pendingDeleteId=null;document.getElementById('confirm-overlay').classList.remove('visible')}
+  document.getElementById('confirm-ok').addEventListener('click',async function(){
+    if(!_pendingDeleteId)return; var id=_pendingDeleteId; closeConfirm();
+    try{
+      var res=await AUTH.authFetch('/api/admin/players/'+id,{method:'DELETE'}); var data=await res.json();
+      if(!res.ok){showError(data.error||'Delete failed.');return}
+      var row=document.getElementById('row-'+id); if(row)row.remove();
+      var panel=document.getElementById('detail-panel'); panel.classList.remove('visible'); panel.innerHTML='';
+    }catch(e){showError('Could not reach the server.')}
+  });
+
+  loadPlayers();
+</script>
+</body>
+</html>
